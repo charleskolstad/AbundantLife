@@ -1,0 +1,84 @@
+﻿
+@{
+    Layout = null;
+}
+
+<div ng-controller="UserCtrl">
+    <div class="card">
+        <div class="card-header"></div>
+        <div class="card-body">
+            <button class="btn btn-success" ng-click="NewUser()">Add new user</button>
+
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">User Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="user in data.Users">
+                        <th scope="row">{{user.UserName}}</th>
+                        <td>{{user.Email}}</td>
+                        <td>
+                            <button class="btn btn-info" ng-click="GetUser(user)">Edit</button>
+                            <button type="button" class="btn btn-warning" ng-click="DeleteUser(user.UserName)">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer"></div>
+    </div>
+
+    <div class="modal fade" id="editMod" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <label>User Name</label>
+                    <input type="text" class="form-control" ng-model="User.UserName" />
+
+                    <label>Email</label>
+                    <input type="email" class="form-control" ng-model="User.Email" />
+
+                    <div class="form-check form-check-inline" ng-repeat="u in User.GroupUsers">
+                        <label class="form-check-label">
+                            <input type="checkbox" name="name" ng-checked="User.GroupUsers[$index].Active" ng-model="User.GroupUsers[$index].Active" /> {{u.GroupName}}
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" ng-click="SaveUser(User)">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteMod" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <label id="delMessage"></label>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-info" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" ng-click="CommitDelete()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

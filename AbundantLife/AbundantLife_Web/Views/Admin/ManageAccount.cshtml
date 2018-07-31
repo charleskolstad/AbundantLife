@@ -1,0 +1,49 @@
+﻿@model AbundantLife_Model.UpdateAccount
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>ManageAccount</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <link href="~/Assets/CSS/login.css" rel="stylesheet" />
+</head>
+<body class="text-center">
+
+    @using (Html.BeginForm("ManageAccount", "Admin", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-signin" }))
+    {
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fa fa-user" aria-hidden="true"></i>Please Update Account</h3>
+            </div>
+            <div class="card-body">
+                <label>User Name</label>
+                @Html.TextBoxFor(m => m.UserName, new { @class = "form-control", @readonly = "true" })
+
+                <label>Current Password</label>
+                @Html.PasswordFor(m => m.CurrentPassword, new { @class = "form-control" })
+
+                <label>New Password</label>
+                @Html.PasswordFor(m => m.NewPassword, new { @class = "form-control" })
+
+                <label>Repeat Password</label>
+                @Html.PasswordFor(m => m.RepeatPassword, new { @class = "form-control" })
+
+                @Html.Hidden("ReturnUrl")
+                @Html.AntiForgeryToken()
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-success">Save &amp; Continue</button>
+            </div>
+        </div>
+
+        @Html.ValidationSummary(false)
+    }
+</body>
+</html>
