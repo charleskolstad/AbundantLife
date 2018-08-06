@@ -60,6 +60,7 @@
     <Content Include="Html\Admin\profile.html" />
     <Content Include="Html\Admin\RecoverPass.html" />
     <Content Include="SQL\error.sql" />
+    <Content Include="SQL\RecoverPass.sql" />
     <Content Include="SQL\users.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,0 +1,2 @@
+ALTER TABLE UserInfo
+ADD RecoverCode NVARCHAR(10) NULL

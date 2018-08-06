@@ -14,26 +14,33 @@ namespace AbundantLife_Core
     public class UserManager
     {
         #region login methods
-        public static void RecoverPassword(RecoverModel model, out string errorMessage, bool isTest = false)
+        public static void RecoverPassword(RecoverModel model, string location, out string errorMessage, bool isTest = false)
         {
             try
             {
-                IMembershipTools membershipTools = AppTools.InitMembershipTools(isTest);
-                IEmailTools emailTools = AppTools.InitEmailTools(isTest);
+
+                ISprocCalls sprocCalls = AppTools.InitSprocCalls(isTest);
                 errorMessage = string.Empty;
 
-                if (model.Email == membershipTools.GetUserEmail(model.UserName))
+                UserInfo user = sprocCalls.UserInfoGetByUser(model.UserName);
+                if (model.Email == user.Email)
                 {
-                    string tempPassword = Membership.GeneratePassword(9, 1);
-                    if (membershipTools.SetTempPassword(model.UserName, tempPassword) == false)
-                        errorMessage = "Error updating account";
+                    string code = RandomCode(7);
+                    while (sprocCalls.UserInfoGetByCode(code) != null)
+                    {
+                        code = RandomCode(7);
+                    }
 
-                    string emailBody = BuildRecoverBody(model.UserName, tempPassword);
-                    if (emailTools.SendEmail(emailBody, model.Email) == false)
-                        errorMessage = "Error sending recover email.";
+                    user.GroupUsers = GetGroupsByUserName(model.UserName, sprocCalls);
+                    user.RecoverCode = RandomCode(7);
+
+                    if (sprocCalls.UserInfoUpdate(user) == false)
+                        errorMessage = "Error recovering password.";
+                    else if (SendRecoverEmail(user, location, isTest) == false)
+                        errorMessage = "Error sending email.";
                 }
                 else
-                    errorMessage = "Email and username is not valid.";
+                    errorMessage = (user != null) ? "Email and username is not valid." : "Error loading user";
             }
             catch (Exception ex)
             {
@@ -42,14 +49,39 @@ namespace AbundantLife_Core
             }
         }
 
-        private static string BuildRecoverBody(string userName, string tempPassword)
+        private static string RandomCode(int length)
         {
-            StringBuilder builder = new StringBuilder();
+            string validCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+            StringBuilder res = new StringBuilder();
+            Random rnd = new Random();
+            while (0 < length--)
+            {
+                res.Append(validCharacters[rnd.Next(validCharacters.Length)]);
+            }
 
-            builder.Append(userName);
-            builder.Append(tempPassword);
+            return res.ToString();
+        }
+        
+        private static bool SendRecoverEmail(UserInfo user, string location, bool isTest)
+        {
+            try
+            {
+                StringBuilder builder = new StringBuilder();
 
-            return builder.ToString();
+                builder.Append("Hello, we have received your message that your password has been forgotten.  To reset your password please click the link below.<br />");
+                builder.Append(@"http://localhost:61860/" + location + "/CompeRec/" + user.RecoverCode);
+
+                IEmailTools emailTools = AppTools.InitEmailTools(isTest);
+                if (emailTools.SendEmail(user.Email, builder.ToString()) == false)
+                    throw new Exception("Error sending email.");
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                DBCommands.RecordError(ex);
+                return false;
+            }
         }
 
         public static void UpdatePassword(UpdateAccount model, out string errorMessage, bool isTest = false)
@@ -252,6 +284,42 @@ namespace AbundantLife_Core
             }
 
             return groupList;
+        }
+
+        public static UserInfo GetUserByCode(CompleteRec model, string code, bool isTest = false)
+        {
+            UserInfo user = null;
+
+            try
+            {
+                ISprocCalls sprocCalls = AppTools.InitSprocCalls(isTest);
+                IMembershipTools membershipTools = AppTools.InitMembershipTools(isTest);
+                user = sprocCalls.UserInfoGetByCode(code);
+
+                if (user.Email == model.Email)
+                {
+                    if (membershipTools.UpdatePassword(model.UserName, model.Password))
+                    {
+                        string errorMessage = string.Empty;
+                        user.GroupUsers = GetGroupsByUserName(user.UserName, sprocCalls);
+                        user.RecoverCode = null;
+                        UpdateUser(user, out errorMessage, isTest);
+
+                        if (string.IsNullOrEmpty(errorMessage) == false)
+                            throw new Exception(errorMessage);
+                    }
+                }
+                else
+                    throw new Exception("User recovered email does not match.");
+
+                return user;
+            }
+            catch (Exception ex)
+            {
+                DBCommands.RecordError(ex);
+            }
+
+            return user;
         }
         #endregion
     }

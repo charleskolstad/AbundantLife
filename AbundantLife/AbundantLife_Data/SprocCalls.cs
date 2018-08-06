@@ -20,16 +20,47 @@ namespace AbundantLife_Data
         {
             DBCommands.PopulateParams("@UserName", userName);
 
-            return (UserInfo)DBCommands.DataReader("p_UserInfo_GetByUser", DBCommands.ObjectTypes.UserInfo);
+            DataTable userData = DBCommands.AdapterFill("p_UserInfo_GetByUser");
+            UserInfo user = new UserInfo();
+
+            foreach (DataRow row in userData.Rows)
+            {
+                user.UserName = row["UserName"].ToString();
+                user.Email = row["Email"].ToString();
+                user.ProfileImage = (row["ProfileImage"] != DBNull.Value) ? row["ProfileImage"].ToString() : null;
+            }
+
+            return user;
         }
 
         public override bool UserInfoUpdate(UserInfo user)
         {
             DBCommands.PopulateParams("@UserName", user.UserName);
             DBCommands.PopulateParams("@ProfileImage", user.ProfileImage);
+            DBCommands.PopulateParams("@RecoverCode", user.RecoverCode);
             DBCommands.PopulateParams("@GroupUsers", MapGroupListToTable(user.GroupUsers));
 
             return DBCommands.ExecuteNonQuery("p_UserInfo_Update");
+        }
+
+        public override UserInfo UserInfoGetByCode(string code)
+        {
+            DBCommands.PopulateParams("@code", code);
+            DataTable userTable = DBCommands.AdapterFill("p_UserInfo_GetByCode");
+            UserInfo user = null;
+
+            foreach (DataRow row in userTable.Rows)
+            {
+                user = new UserInfo();
+                user.UserInfoID = Convert.ToInt32(row["UserInfoID"]);
+                user.UserName = row["UserName"].ToString();
+                user.Email = (row["Email"] != DBNull.Value) ? row["Email"].ToString() : null;
+                user.ProfileImage = (row["ProfileImage"] != DBNull.Value) ? row["ProfileImage"].ToString() : null;
+                user.RecoverCode = code;
+            }
+
+
+            return user;
         }
         #endregion
 
@@ -97,6 +128,19 @@ namespace AbundantLife_Data
                 return (groupsTable.Rows.Count == 1);
             }
         }
+
+        public override UserInfo UserInfoGetByCode(string code)
+        {
+            if (string.IsNullOrEmpty(code))
+                return null;
+            else
+            {
+                UserInfo user = new UserInfo();
+                user.RecoverCode = code;
+
+                return user;
+            }
+        }
         #endregion
 
         #region group users
@@ -151,6 +195,7 @@ namespace AbundantLife_Data
         public abstract DataTable UserInfoGetAll();
         public abstract UserInfo UserInfoGetByUser(string userName);
         public abstract bool UserInfoUpdate(UserInfo user);
+        public abstract UserInfo UserInfoGetByCode(string code);
         #endregion
 
         #region group users

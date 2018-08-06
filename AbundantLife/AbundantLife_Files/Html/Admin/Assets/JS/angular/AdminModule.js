@@ -3,6 +3,8 @@ angular.module("Admin", ["ngRoute"]).config(function ($routeProvider) {
         templateUrl: "allusers.html"
     }).when("/userProfile", {
         templateUrl: "profile.html"
+    }).when("/allEvents", {
+        templateUrl: "Events.html"
     }).otherwise({
 
     });

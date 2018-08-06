@@ -26,7 +26,7 @@ namespace AbundantLife_Web.Controllers
         public ActionResult Login(string returnUrl)
         {
             Provider provider = new Provider();
-            Membership.CreateUser("cpkolsta", "p@ssword1", "charlespkolstad@gmail.com");
+            
             return LoginStart(returnUrl);
         }
 
@@ -63,15 +63,21 @@ namespace AbundantLife_Web.Controllers
             if (ModelState.IsValid)
             {
                 string errorMessage = string.Empty;
-                UserManager.RecoverPassword(recover, out errorMessage);
+                UserManager.RecoverPassword(recover, "Admin", out errorMessage);
 
                 if (string.IsNullOrEmpty(errorMessage))
-                    return ManageReturnUrl(returnUrl);
+                    return RedirectToAction("Instructions", recover);
 
                 ModelState.AddModelError("", errorMessage);
             }
 
-            return View();
+            return View(recover);
+        }
+
+        [AllowAnonymous]
+        public ActionResult Instructions(RecoverModel recover)
+        {
+            return View(recover);
         }
 
         public ActionResult ManageAccount()
@@ -112,6 +118,17 @@ namespace AbundantLife_Web.Controllers
         [AllowAnonymous, HttpPost]
         public ActionResult CompeRec(CompleteRec model)
         {
+            if (ModelState.IsValid)
+            {
+                string userCode = RouteData.Values["id"] + Request.Url.Query;
+                UserInfo user = UserManager.GetUserByCode(model, userCode);
+
+                if (user != null)
+                    return RedirectToAction("Login");
+
+                ModelState.AddModelError("", "Unable to find user information.");
+            }
+
             return View();
         }
 

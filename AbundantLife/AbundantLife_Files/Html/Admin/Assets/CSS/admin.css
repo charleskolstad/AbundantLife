@@ -279,3 +279,11 @@ body.sidenav-toggled .navbar-sidenav-tooltip.show {
 .profile-name{
     border-bottom: solid 1px;
 }
+
+.pointer{
+    cursor: pointer;
+}
+
+.pointer:hover{
+    text-decoration: underline;
+}

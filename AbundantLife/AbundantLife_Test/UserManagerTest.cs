@@ -24,7 +24,7 @@ namespace AbundantLife_Test
             string errorMessage;
             bool isEmptyString;
 
-            UserManager.RecoverPassword(model, out errorMessage, true);
+            UserManager.RecoverPassword(model, "Admin", out errorMessage, true);
             isEmptyString = string.IsNullOrEmpty(errorMessage);
 
             Assert.IsTrue(isEmptyString == expected);
@@ -175,6 +175,19 @@ namespace AbundantLife_Test
             result = UserManager.DeleteUser(userName, true);
 
             Assert.IsTrue(result == expected);
+        }
+
+        [TestCase("TestCode", true)]
+        [TestCase(null, false)]
+        public void GetUserByCode_ReturnUserInfo(string name, bool expected)
+        {
+            string userName = name;
+            bool emptyObject;
+
+            UserInfo user = UserManager.GetUserByName(name, true);
+            emptyObject = (user != null);
+
+            Assert.IsTrue(expected == emptyObject);
         }
     }
 }

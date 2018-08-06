@@ -13,5 +13,6 @@ namespace AbundantLife_Model
         public string Email { get; set; }
         public string ProfileImage { get; set; }
         public List<UserGroups> GroupUsers { get; set; }
+        public string RecoverCode { get; set; }
     }
 }
